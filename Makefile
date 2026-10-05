@@ -1,4 +1,4 @@
-APP_NAME = LED Lamp
+APP_NAME = LED_Lamp
 APP_ICON = src/icon.png
 
 OUTPUT_DIR = output
