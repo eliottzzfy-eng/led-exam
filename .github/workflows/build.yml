@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: app
+
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
+
+      - name: Setup Node (for nwlink)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Le Makefile inclut ../build/external_app.mak, fourni par le depot Epsilon.
+      - name: Fetch NumWorks external app build rules
+        run: |
+          mkdir -p build
+          curl -fsSL \
+            https://raw.githubusercontent.com/numworks/epsilon/master/epsilon/external_apps/build/external_app.mak \
+            -o build/external_app.mak
+
+      - name: Build .nwa
+        run: make -C app PLATFORM=device build
+
+      - name: Upload .nwa
+        uses: actions/upload-artifact@v4
+        with:
+          name: LED_Lamp-nwa
+          path: app/output/device/LED_Lamp.nwa
+          if-no-files-found: error
